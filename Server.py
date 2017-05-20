@@ -17,9 +17,10 @@ class ChatSession(async_chat):
 		self.set_terminator(b'\r\n') # 默认的终止符'\r\n', 注意是bytes
 		# 该用户发的数据data
 		self.data = []
+		# self.bdata = []
 		# 还未login, 暂无名字
 		self.name = None
-		self.push(bytes('Welcome to {}\r\n'.format(self.server.name), 'utf-8'))
+
 		# 进入LoginRoom (loginRoom是专门用于登录的)
 		self.enter(LoginRoom(server))
 
@@ -31,7 +32,7 @@ class ChatSession(async_chat):
 		except AttributeError:
 			pass
 		else:
-			# 在一开始的那个房间退出
+			# 在一开始的那个房间退出(Room.remove())
 			cur.remove(self)
 
 		# 更新到新的房间
@@ -39,13 +40,23 @@ class ChatSession(async_chat):
 		room.add(self)
 
 	def collect_incoming_data(self, data):
-		self.data.append(str(data, 'utf-8'))
-		# print('Receive data {}'.format(str(data, 'utf-8')))
+		if data == b'\x08': # 如果接收到的是回车(backspace), 就去掉一个
+			if self.data: 
+				self.data.pop()
+		else: 
+			self.data.append(data.decode('utf-8'))
+			
+		print(''.join(self.data))
+		print(self.data)
+
+		print('Receive data #{}#'.format(str(data, 'utf-8')))
 
 	def found_terminator(self):
 		line = ''.join(self.data)
 		self.data = []
+
 		print('#'+line+'#')
+		print(b'#'+bytes(line,'utf-8')+b'#')
 		
 		try:
 			# 处理命令

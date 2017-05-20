@@ -45,7 +45,7 @@ class LoginRoom(Room):
 	def unknown(self, session, cmd):
 		'除了login, logout 命令都是未知命令'
 		# 向该用户发信息
-		session.push('Please log in\nUse "login <nick>"\r\n'.encode('utf-8'))
+		session.push('Please log in\r\n# Use "login <nick>"\r\n'.encode('utf-8'))
 
 	def do_login(self, session, line):
 		name = line.strip()
@@ -53,10 +53,11 @@ class LoginRoom(Room):
 		if not name:
 			session.push('Please enter a name.\r\n'.encode('utf-8'))
 		elif name in self.server.users:
-			session.push('The name "{}" is taken.\nPlease try again.\r\n'.format(name).encode('utf-8'))
+			session.push('The name "{}" is taken.\r\nPlease try again.\r\n'.format(name).encode('utf-8'))
 		else:
 			session.name = name
 			session.enter(self.server.main_room)
+			session.push('Successful, Log in as {}\r\n'.format(name).encode('utf-8'))
 
 class ChatRoom(Room):
 	'''
